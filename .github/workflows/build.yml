@@ -1,10 +1,10 @@
-name: Build OpenWrt for Xiaomi R3
+name: Build OpenWrt Firmware
 
 on:
-  workflow_dispatch:
   push:
     branches:
-      - main
+      - master
+  workflow_dispatch:
 
 jobs:
   build:
@@ -14,29 +14,28 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Install dependencies
+      - name: Install build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential libncurses5-dev gawk git subversion unzip python3 python3-apt
-          sudo apt-get install -y python3.11-distutils || echo "python3.11-distutils not available"
-          python3 -m ensurepip --upgrade || echo "ensurepip failed"
-          python3 -m pip install --upgrade setuptools || echo "pip install setuptools failed"
+          sudo apt-get install -y \
+            build-essential ccache libncurses5-dev gawk gettext unzip file python3 python3-distutils python3-setuptools python3-pip git
 
-      - name: Copy .config for R3
-        run: |
-          cp config/r3.config .config
-
-      - name: Update feeds
+      - name: Update and install feeds
         run: |
           ./scripts/feeds update -a
           ./scripts/feeds install -a
 
-      - name: Build OpenWrt
-        run: |
-          make -j$(nproc) V=s
+      - name: Copy custom config file
+        run: cp config/r3.config .config
+
+      - name: Synchronize config (defconfig)
+        run: make defconfig
+
+      - name: Build OpenWrt firmware
+        run: make -j$(nproc) V=s
 
       - name: Upload firmware artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
-          name: openwrt-firmware-r3
-          path: bin/targets/
+          name: openwrt-firmware
+          path: bin/targets/ramips/mt76x8/
