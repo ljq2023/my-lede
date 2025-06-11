@@ -1,9 +1,9 @@
-name: OpenWrt Build
+name: Build OpenWrt Xiaomi Mi Router 3
 
 on:
   push:
     branches:
-      - master
+      - main
   workflow_dispatch:
 
 jobs:
@@ -11,25 +11,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup OpenWrt feeds
+      - name: Set up feeds
         run: |
           ./scripts/feeds update -a
           ./scripts/feeds install -a
 
-      - name: Copy custom config
+      - name: Copy config file
         run: |
-          cp ./config/r3.config .config
+          cp config/r3.config .config
+
+      - name: Prepare build configuration
+        run: |
           make defconfig
 
-      - name: Build OpenWrt firmware
+      - name: Compile firmware
         run: |
           make -j$(nproc) V=s
 
-      - name: Upload firmware artifacts
+      - name: Upload firmware
         uses: actions/upload-artifact@v4
         with:
           name: openwrt-firmware
-          path: bin/targets/ramips/mt7621/*.bin
+          path: bin/targets/ramips/mt76x8/*.bin
