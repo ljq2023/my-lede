@@ -17,11 +17,14 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential libncurses5-dev gawk git subversion unzip python3 python3-apt python3-distutils
+          sudo apt-get install -y build-essential libncurses5-dev gawk git subversion unzip python3 python3-apt
+          sudo apt-get install -y python3.11-distutils || echo "python3.11-distutils not available"
+          python3 -m ensurepip --upgrade || echo "ensurepip failed"
+          python3 -m pip install --upgrade setuptools || echo "pip install setuptools failed"
 
       - name: Copy .config for R3
         run: |
-          cp configs/r3.config .config
+          cp config/r3.config .config
 
       - name: Update feeds
         run: |
@@ -36,4 +39,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: openwrt-firmware-r3
-          path: bin/targets/**
+          path: bin/targets/
