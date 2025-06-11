@@ -1,4 +1,4 @@
-name: Build OpenWrt Firmware
+name: OpenWrt Build
 
 on:
   push:
@@ -11,31 +11,25 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Install build dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            build-essential ccache libncurses5-dev gawk gettext unzip file python3 python3-distutils python3-setuptools python3-pip git
-
-      - name: Update and install feeds
+      - name: Setup OpenWrt feeds
         run: |
           ./scripts/feeds update -a
           ./scripts/feeds install -a
 
-      - name: Copy custom config file
-        run: cp config/r3.config .config
-
-      - name: Synchronize config (defconfig)
-        run: make defconfig
+      - name: Copy custom config
+        run: |
+          cp ./config/r3.config .config
+          make defconfig
 
       - name: Build OpenWrt firmware
-        run: make -j$(nproc) V=s
+        run: |
+          make -j$(nproc) V=s
 
       - name: Upload firmware artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: openwrt-firmware
-          path: bin/targets/ramips/mt76x8/
+          path: bin/targets/ramips/mt7621/*.bin
