@@ -1,4 +1,4 @@
-name: Build OpenWrt for Xiaomi 3
+name: Build OpenWrt for Xiaomi R3
 
 on:
   workflow_dispatch:
@@ -9,15 +9,15 @@ jobs:
 
     steps:
       - name: Checkout source
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install dependencies
         run: |
           sudo apt update
           sudo apt install -y build-essential ccache ecj fastjar file g++ gawk \
             gettext git java-propose-classpath libelf-dev libncurses5-dev \
-            libncursesw5-dev libssl-dev python3 python3-pyelftools python3-setuptools \
-            python3-distutils-extra python3-lib2to3 unzip wget zlib1g-dev rsync subversion
+            libncursesw5-dev libssl-dev python3 python3-pyelftools \
+            unzip wget zlib1g-dev python3-setuptools rsync subversion
 
       - name: Clone OpenWrt
         run: |
@@ -28,7 +28,7 @@ jobs:
 
       - name: Copy Custom Config
         run: |
-          cp .config openwrt/.config
+          cp config/r3.config openwrt/.config
 
       - name: Build
         run: |
@@ -40,5 +40,5 @@ jobs:
       - name: Upload firmware
         uses: actions/upload-artifact@v4
         with:
-          name: Xiaomi-3-Firmware
+          name: Xiaomi-R3-Firmware
           path: openwrt/bin/targets/
