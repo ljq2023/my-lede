@@ -8,45 +8,40 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout source
-      uses: actions/checkout@v4
+      - name: Checkout source
+        uses: actions/checkout@v4
 
-    - name: Set up build environment
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y build-essential ccache ecj fastjar file g++ gawk \
-          gettext git java-propose-classpath libelf-dev libncurses5-dev \
-          libncursesw5-dev libssl-dev python3 unzip wget zlib1g-dev python3-pip python3-venv || true
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y build-essential ccache ecj fastjar file g++ gawk \
+            gettext git java-propose-classpath libelf-dev libncurses5-dev \
+            libncursesw5-dev libssl-dev python3 python3-pyelftools \
+            unzip wget zlib1g-dev python3-pip python3-venv rsync subversion || true
 
-        python3 -m ensurepip --upgrade
-        pip3 install setuptools
+          python3 -m ensurepip --upgrade
+          pip3 install setuptools
 
-    - name: Clone OpenWrt
-      run: |
-        git clone https://github.com/openwrt/openwrt.git
-        cd openwrt
-        ./scripts/feeds update -a
-        ./scripts/feeds install -a
+      - name: Clone OpenWrt
+        run: |
+          git clone --depth=1 https://github.com/openwrt/openwrt.git openwrt
+          cd openwrt
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
 
-    - name: Inject custom config
-      run: |
-        cp ${{ github.workspace }}/config/r3.config openwrt/.config
+      - name: Copy Custom Config
+        run: |
+          cp ${{ github.workspace }}/config/r3.config openwrt/.config
 
-    - name: Build firmware
-      run: |
-        cd openwrt
-        make defconfig
-        make download -j8
-        make -j$(nproc) || make -j1 V=s
+      - name: Build
+        run: |
+          cd openwrt
+          make defconfig
+          make download -j8 || true
+          make -j$(nproc)
 
-    - name: Upload firmware
-      uses: actions/upload-artifact@v4
-      with:
-        name: Xiaomi-Mi-R3-Firmware
-        path: openwrt/bin/targets/ramips/mt7620/
-
-    - name: Upload build config
-      uses: actions/upload-artifact@v4
-      with:
-        name: BuildConfig
-        path: openwrt/.config
+      - name: Upload firmware
+        uses: actions/upload-artifact@v4
+        with:
+          name: Xiaomi-Mi-Router-3-Firmware
+          path: openwrt/bin/targets/ramips/mt7620/
