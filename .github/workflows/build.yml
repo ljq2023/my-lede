@@ -9,7 +9,7 @@ jobs:
 
     steps:
     - name: Checkout source
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Set up build environment
       run: |
@@ -25,19 +25,25 @@ jobs:
         ./scripts/feeds update -a
         ./scripts/feeds install -a
 
-    - name: Copy custom config
+    - name: Inject custom config
       run: |
-        cp $GITHUB_WORKSPACE/mir3.config openwrt/.config
+        cp $GITHUB_WORKSPACE/config/r3.config openwrt/.config
 
     - name: Build firmware
       run: |
         cd openwrt
         make defconfig
         make download -j8
-        make -j$(nproc)
+        make -j$(nproc) || make -j1 V=s
 
     - name: Upload firmware
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: Xiaomi-Mi-R3-Firmware
         path: openwrt/bin/targets/ramips/mt7620/
+
+    - name: Upload build config
+      uses: actions/upload-artifact@v4
+      with:
+        name: BuildConfig
+        path: openwrt/.config
