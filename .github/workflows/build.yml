@@ -16,10 +16,11 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y build-essential ccache ecj fastjar file g++ gawk \
           gettext git java-propose-classpath libelf-dev libncurses5-dev \
-          libncursesw5-dev libssl-dev python3 unzip wget zlib1g-dev python3-pip || true
+          libncursesw5-dev libssl-dev python3 unzip wget zlib1g-dev python3-pip python3-venv || true
 
-        sudo apt-get install -y python3-setuptools || true
-        sudo apt-get install -y python3-distutils || sudo apt-get install -y python3.10-distutils || true
+        # 使用 ensurepip 和 pip 安装 setuptools（包含 distutils 功能）
+        python3 -m ensurepip --upgrade
+        pip3 install setuptools
 
     - name: Clone OpenWrt
       run: |
