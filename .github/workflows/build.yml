@@ -1,4 +1,4 @@
-name: Build OpenWrt for Xiaomi Mi Router 3
+name: Build LEDE for Xiaomi Mi Router 3
 
 on:
   workflow_dispatch:
@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-      - name: Checkout source
+      - name: Checkout
         uses: actions/checkout@v3
 
       - name: Install dependencies
@@ -19,14 +19,14 @@ jobs:
             libncursesw5-dev libssl-dev python3 python3-distutils python3-pyelftools \
             unzip wget zlib1g-dev python3-setuptools rsync subversion
 
-      - name: Clone OpenWrt
+      - name: Clone LEDE source
         run: |
-          git clone --depth=1 https://github.com/openwrt/openwrt.git openwrt
+          git clone --depth=1 https://github.com/coolsnowwolf/lede.git openwrt
           cd openwrt
           ./scripts/feeds update -a
           ./scripts/feeds install -a
 
-      - name: Copy custom config from config/R3.config
+      - name: Copy custom config
         run: |
           cp config/R3.config openwrt/.config
 
@@ -37,7 +37,7 @@ jobs:
           make download -j8 || true
           make -j$(nproc)
 
-      - name: Upload firmware
+      - name: Upload sysupgrade firmware
         uses: actions/upload-artifact@v4
         with:
           name: Mi-R3-Firmware
