@@ -1,4 +1,4 @@
-name: Build OpenWrt for Xiaomi R3
+name: Build OpenWrt for Xiaomi Mi Router 3
 
 on:
   workflow_dispatch:
@@ -9,14 +9,14 @@ jobs:
 
     steps:
       - name: Checkout source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
       - name: Install dependencies
         run: |
           sudo apt update
           sudo apt install -y build-essential ccache ecj fastjar file g++ gawk \
             gettext git java-propose-classpath libelf-dev libncurses5-dev \
-            libncursesw5-dev libssl-dev python3 python3-pyelftools \
+            libncursesw5-dev libssl-dev python3 python3-distutils python3-pyelftools \
             unzip wget zlib1g-dev python3-setuptools rsync subversion
 
       - name: Clone OpenWrt
@@ -26,11 +26,11 @@ jobs:
           ./scripts/feeds update -a
           ./scripts/feeds install -a
 
-      - name: Copy Custom Config
+      - name: Copy custom config from config/R3.config
         run: |
-          cp config/r3.config openwrt/.config
+          cp config/R3.config openwrt/.config
 
-      - name: Build
+      - name: Build firmware
         run: |
           cd openwrt
           make defconfig
@@ -40,5 +40,11 @@ jobs:
       - name: Upload firmware
         uses: actions/upload-artifact@v4
         with:
-          name: Xiaomi-R3-Firmware
+          name: Mi-R3-Firmware
           path: openwrt/bin/targets/
+
+      - name: Upload .ipk plugin packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: Mi-R3-IPK-Packages
+          path: openwrt/bin/packages/
